@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FydraAI</title>
+<style>
+:root{--bg:#0b0d0c;--panel:#111412;--panel2:#151916;--text:#f2f5f1;--muted:#8e968f;--line:#303630;--green:#9efc62;--green2:#7fd94d}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace}
+button,input{font:inherit}.app{height:100%;display:grid;grid-template-columns:250px 1fr;overflow:hidden}
+aside{border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:22px;background:#0d100e}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:21px;letter-spacing:-.5px}.mark{width:27px;height:27px;border:2px solid var(--green);display:grid;place-items:center;color:var(--green);font-weight:900}.by{font-size:11px;color:var(--muted);font-weight:500;margin-left:1px}
+.new{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:11px 12px;border-radius:6px;text-align:left;cursor:pointer}.new:hover{border-color:#596159}
+.nav{display:flex;flex-direction:column;gap:5px}.nav button{border:0;background:transparent;color:var(--muted);text-align:left;padding:9px 10px;border-radius:5px;cursor:pointer}.nav button.active,.nav button:hover{background:var(--panel2);color:var(--text)}
+.spacer{flex:1}.status{border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font-size:11px;line-height:1.7}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px}
+main{min-width:0;display:flex;flex-direction:column}.top{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px}.title{font-size:13px;color:var(--muted)}.model{color:var(--text);background:transparent;border:1px solid var(--line);border-radius:5px;padding:7px 10px;font-size:12px}
+.chat{flex:1;overflow:auto;padding:32px clamp(20px,8vw,110px)}.welcome{max-width:780px;margin:12vh auto 0}.welcome h1{font-size:34px;margin:0 0 10px;letter-spacing:-1.5px}.welcome h1 span{color:var(--green)}.welcome p{color:var(--muted);line-height:1.7;margin:0 0 25px}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.card{border:1px solid var(--line);background:var(--panel);padding:14px;border-radius:6px;color:#c5ccc5;text-align:left;cursor:pointer}.card:hover{border-color:#596159;color:var(--text)}
+.message{max-width:780px;margin:0 auto 20px;display:none}.message .role{color:var(--green);font-size:11px;margin-bottom:7px}.message .body{white-space:pre-wrap;line-height:1.7;color:#dce2dc}
+.composer{border-top:1px solid var(--line);padding:16px clamp(20px,8vw,110px) 20px}.box{max-width:780px;margin:auto;border:1px solid var(--line);background:var(--panel);border-radius:7px;display:flex;align-items:flex-end;padding:10px}.box:focus-within{border-color:#596159}.box textarea{resize:none;outline:0;border:0;background:transparent;color:var(--text);width:100%;min-height:45px;max-height:160px}.send{border:0;background:var(--green);color:#0a0d0a;width:34px;height:34px;border-radius:5px;font-weight:900;cursor:pointer}.send:hover{background:var(--green2)}
+@media(max-width:700px){.app{grid-template-columns:1fr}aside{display:none}.top{padding:0 14px}.chat{padding:20px 14px}.composer{padding:12px 14px 15px}.welcome{margin-top:15vh}.welcome h1{font-size:27px}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand"><div class="mark">✦</div><span>FydraAI</span><span class="by">by Olavo</span></div>
+  <button class="new" onclick="newChat()">+ New chat</button>
+  <div class="nav"><button class="active">Chat</button><button>History</button></div>
+  <div class="spacer"></div>
+  <div class="status"><span class="dot"></span>Ready<br>FydraAI</div>
+</aside>
+<main>
+  <div class="top"><div class="title">FydraAI</div><select class="model" aria-label="Model"><option>FydraAI</option><option>Default</option></select></div>
+  <section class="chat" id="chat">
+    <div class="welcome" id="welcome">
+      <h1>What can <span>FydraAI</span> do?</h1>
+      <p>Ask anything, write code, analyze files or work through a problem.</p>
+      <div class="cards">
+        <button class="card" onclick="usePrompt('Build a website')">Build a website</button>
+        <button class="card" onclick="usePrompt('Help me write code')">Help me write code</button>
+        <button class="card" onclick="usePrompt('Analyze this project')">Analyze a project</button>
+        <button class="card" onclick="usePrompt('Explain something')">Explain something</button>
+      </div>
+    </div>
+    <div class="message" id="message"><div class="role">FydraAI</div><div class="body" id="answer"></div></div>
+  </section>
+  <div class="composer"><div class="box"><textarea id="input" rows="1" placeholder="Ask FydraAI anything..." onkeydown="key(event)"></textarea><button class="send" onclick="send()">↑</button></div></div>
+</main>
+</div>
+<script>
+const input=document.getElementById('input'),welcome=document.getElementById('welcome'),message=document.getElementById('message'),answer=document.getElementById('answer');
+function usePrompt(v){input.value=v;input.focus()}
+function key(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}
+function send(){const v=input.value.trim();if(!v)return;welcome.style.display='none';message.style.display='block';answer.textContent='Mensagem recebida. Conecte o backend de IA para gerar a resposta.';input.value='';}
+function newChat(){welcome.style.display='block';message.style.display='none';answer.textContent='';input.value='';input.focus()}
+</script>
+</body>
+</html>
